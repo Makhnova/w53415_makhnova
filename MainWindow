@@ -1,0 +1,69 @@
+using System;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Windows.Forms;
+
+namespace FileSearcher
+{
+    public partial class MainWindow : Form
+    {
+        FileSearcher searcher = new FileSearcher();
+        BindingSource bindingSource = new BindingSource();
+        DataTable dataTable = new DataTable();
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            init();
+        }
+        private void init()
+        {
+            bindingSource.DataSource = dataTable;
+            dataGridView.DataSource = bindingSource;
+            
+            dataTable.Columns.Add("File");
+            dataTable.Columns.Add("Extension");
+            dataTable.Columns.Add("Lenght");
+            dataTable.Columns.Add("Creation time");
+        }
+        private void GridRefresh()
+        {
+            dataTable.Clear();
+
+            foreach (FileInfo file in searcher.getFileList())
+                dataTable.Rows.Add(file.Name, file.Extension, file.Length, file.CreationTime);
+            
+            bindingSource.ResetBindings(false);
+        }
+
+        public void SearchButton_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog explorer = new FolderBrowserDialog();
+            explorer.ShowDialog();
+
+            if (!String.IsNullOrEmpty(explorer.SelectedPath))
+            {
+                searcher.clearFileList();
+
+                searcher.path = explorer.SelectedPath;
+                searcher.name = NameText.Text.Trim();
+                searcher.type = TypeText.Text.Trim();
+
+                bool sizeFlag = false;
+                if (!String.IsNullOrEmpty(SizeText.Text.Trim()))
+                {
+                    try
+                    {
+                        searcher.size = Convert.ToInt64(SizeText.Text);
+                        sizeFlag = true;
+                    }
+                    catch (FormatException) { MessageBox.Show("Invalid size!"); }
+                }
+
+                searcher.SearchFiles(!String.IsNullOrEmpty(searcher.name), !String.IsNullOrEmpty(searcher.type), sizeFlag);
+                GridRefresh();
+            }
+        }
+    }
+}
