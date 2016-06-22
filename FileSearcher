@@ -1,0 +1,100 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace FileSearcher
+{
+    public class FileSearcher
+    {
+        public string name { get; set; }
+        public string type { get; set; }
+        public long size { get; set; }
+        public string path { get; set; }
+
+        public Stack<string> Directories = new Stack<string>(20);
+        public List<FileInfo> FileList = new List<FileInfo>();
+
+        public List<FileInfo> getFileList()
+        {
+            return FileList;
+        }
+
+        public void clearFileList()
+        {
+            FileList.Clear();
+        }
+
+        public void SearchFiles(bool nameFlag, bool typeFlag, bool sizeFlag)
+        { 
+            if (nameFlag && !typeFlag && !sizeFlag)
+            {
+                WalkTree(path, name + "*.*");
+            }
+            else if (nameFlag && typeFlag && !sizeFlag)
+            {
+                WalkTree(path, name + "*." + type + "*");
+            }
+            else if (nameFlag && typeFlag && sizeFlag)
+            {
+                WalkTree(path, name + "*." + type + "*", 0);
+            }
+            else if (!nameFlag && typeFlag && !sizeFlag)
+            {
+                WalkTree(path, "*." + type + "*");
+            }
+            else if (!nameFlag && typeFlag && sizeFlag) 
+            {
+                WalkTree(path, name + "*.*", 0);
+            }
+            else if (!nameFlag && !typeFlag && sizeFlag)
+            {
+                WalkTree(path, "*.*", 0);
+            }
+            else if (nameFlag && !typeFlag && sizeFlag)
+            {
+                WalkTree(path, name + "*.*", 0);
+            }
+            else
+            {
+                WalkTree(path, "*.*");
+            }
+        }
+         
+         public void WalkTree(string root, params object[] searchPattern)
+        {
+            Directories.Push(root);
+
+            while (Directories.Count> 0)
+            {
+                string currentDir = Directories.Pop();
+
+                string[] subDirs = null;
+                string[] files = null;
+
+                try
+                {
+                    subDirs = Directory.GetDirectories(currentDir);
+                    files = Directory.GetFiles(currentDir, searchPattern[0].ToString());
+                }
+                catch (UnauthorizedAccessException) { continue; }
+                catch (DirectoryNotFoundException) { continue; }
+                
+                foreach (string str in subDirs)
+                    Directories.Push(str);
+                
+                foreach (string file in files) 
+                {
+                    FileInfo fi = new FileInfo(file);
+                    if (searchPattern.Length >= 2)
+                    {
+                        if (fi.Length == size)
+                            FileList.Add(fi);
+                    }
+                    else
+                        FileList.Add(fi);
+                }
+            }
+        }
+    }
+
+}
