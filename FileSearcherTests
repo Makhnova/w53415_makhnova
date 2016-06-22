@@ -1,0 +1,51 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FileSearcher;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace FileSearcher.Tests
+{
+    [TestClass()]
+    public class FileSearcherTests
+    {
+        //Metoda testowa która sprawdza poprawne obsługiwanie DirectoryNotFoundException w metodzie FileSearcher.WalkTree
+        [TestMethod()]
+        public void WalkTreeTestDirectoryExeption()
+        {
+            FileSearcher testProg = new FileSearcher();
+ 
+            try
+            {
+                testProg.Directories.Clear();
+                testProg.path = "failDirectory";
+                testProg.WalkTree(testProg.path, "*.*");
+            }
+            catch (DirectoryNotFoundException)
+            {
+                Assert.Fail();
+            } 
+        }
+
+        //Metoda testowa która sprawdza poprawne obsługiwanie UnauthorizedAccessException w metodzie FileSearcher.WalkTree
+        [TestMethod()]
+        public void WalkTreeTestAccessExeption()
+        {
+            FileSearcher testProg = new FileSearcher();
+
+            try
+            {
+                testProg.Directories.Clear();
+                testProg.path = @"C:\Users\user\Desktop";
+                testProg.WalkTree(testProg.path, "*.*");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Assert.Fail();
+            }
+        }
+    }
+}
